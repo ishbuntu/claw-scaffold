@@ -26,6 +26,7 @@ Vault/
 │   ├── lessons/                  # corrections, one note each, #lesson
 │   ├── people/                   # notes on people (prefs, context, dates)
 │   ├── projects/                 # agent-maintained project state notes
+│   ├── career/impact-log.md      # running impact log; weekly-retro cron appends candidates, human curates
 │   └── inbox/                    # "remember this" captures from chat
 ├── ...your PARA/notes...
 ```
