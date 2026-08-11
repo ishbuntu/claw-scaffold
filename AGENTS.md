@@ -27,10 +27,16 @@ Collect and write answers to `setup-answers.md` (gitignored is fine):
    least-friction) and the owner's account ID on it.
 5. Boards to connect (any of: Trello, GitHub Projects, Jira, Linear,
    Todoist, vault markdown board) + where their API creds will come from.
-6. `{INBOX}` source for triage (email? platform DMs?) — or skip the
-   inbox-triage cron for now.
-7. Which crons to enable (default: all seven in `crons/`).
-8. Timezone → adjust cron expressions if not local.
+6. Email + calendar: provider (Gmail/Google Workspace, iCloud, IMAP) and
+   scope of access — read-only, or read + draft. Recommend read + draft
+   (sending stays human). This powers morning-rundown, eod-handoff, and
+   inbox-triage. Owner may defer to a later session; note it and move on.
+7. `{INBOX}` source for triage (usually the email above; platform DMs
+   also work) — or skip the inbox-triage cron for now.
+8. Which crons to enable (default: all seven in `crons/`), and whether
+   the owner wants any custom summaries beyond them (describe → you
+   write the cron template from the existing ones as a pattern).
+9. Timezone → adjust cron expressions if not local.
 
 ## Phase 1 — base install
 
@@ -122,6 +128,17 @@ Order matters: harden FIRST.
    docs, versions move fast.
 4. Only now enable the one channel from Phase 0, `dmPolicy: "pairing"`,
    complete pairing with the owner's account, send the test message.
+5. Email + calendar (if chosen in Phase 0) — LAST, after everything
+   above is green:
+   - Gmail/Google Workspace: install the gog skill (Gmail + Calendar
+     CLI); walk the owner through its OAuth consent, requesting the
+     narrowest scopes matching Phase 0 (read-only vs read + draft —
+     never grant send unless the owner explicitly insists).
+   - iCloud/IMAP: an IMAP-based skill or Apple Mail via AppleScript on
+     this host.
+   - Verify: agent reads today's calendar and latest 5 subjects; then
+     prove the negative — inbox-triage drafts but CANNOT send (tool
+     denial in config, not just the prompt rule).
 
 ## Phase 7 — acceptance
 
@@ -129,6 +146,7 @@ Demonstrate to the owner, live:
 
 - [ ] "who are you" → Sisyphus persona
 - [ ] morning rundown arrives on schedule (or manual trigger) + vault note
+  — including calendar + email sections if Phase 6.5 was done
 - [ ] a correction ("always call me X") persists into a new session
 - [ ] "watch <thing> until done" → heartbeat entry appears; completes and
       self-removes when the condition is met
