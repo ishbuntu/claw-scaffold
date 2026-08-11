@@ -1,0 +1,68 @@
+// Copy to ~/.openclaw/openclaw.json, replace {PLACEHOLDERS}, export env
+// vars (ANTHROPIC_API_KEY, OPENCLAW_GATEWAY_TOKEN), then: openclaw doctor
+{
+  gateway: {
+    mode: "local",
+    bind: "loopback",
+    auth: { mode: "token", token: { env: "OPENCLAW_GATEWAY_TOKEN" } },
+  },
+
+  models: {
+    providers: {
+      anthropic: {
+        api: "anthropic",
+        apiKey: { env: "ANTHROPIC_API_KEY" },
+      },
+    },
+    primaryProvider: "anthropic",
+  },
+
+  agents: {
+    defaults: {
+      workspace: "~/.openclaw/workspace",
+      model: { provider: "anthropic", primary: "{PRIMARY_MODEL}" },
+      sandbox: { mode: "non-main", scope: "agent" },
+      subagents: {
+        model: "{CHEAP_MODEL}",
+        maxSpawnDepth: 2,
+        maxConcurrent: 6,
+        runTimeoutSeconds: 900,
+      },
+      bootstrapMaxChars: 60000,
+    },
+    list: [
+      {
+        id: "main",
+        default: true,
+        name: "Sisyphus",
+        // allowAgents must be set here, not in defaults (upstream #59938)
+        subagents: { allowAgents: ["*"] },
+      },
+    ],
+  },
+
+  tools: {
+    exec: { security: "allowlist", ask: "on-risk" },
+    elevated: { enabled: false },
+    fs: { workspaceOnly: false }, // vault access needed; rely on sandbox + confirms
+    subagents: {
+      tools: { deny: ["gateway", "cron", "sessions_send"] },
+    },
+  },
+
+  memory: {
+    search: {
+      provider: "{EMBEDDING_PROVIDER}", // e.g. ollama for fully-local
+      sources: ["memory"],
+    },
+  },
+
+  channels: {
+    // Enable ONE channel first, verify pairing works, then add others.
+    telegram: {
+      enabled: false,
+      dmPolicy: "pairing",
+      groups: { "*": { requireMention: true } },
+    },
+  },
+}

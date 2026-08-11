@@ -1,0 +1,10 @@
+*.env
+.env*
+*token*
+*secret*
+*.key
+board-cache/
+drafts/
+node_modules/
+__pycache__/
+.DS_Store
