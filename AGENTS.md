@@ -40,6 +40,23 @@ openclaw onboard --install-daemon   # Anthropic auth, NO channels yet
 openclaw gateway status              # verify: running
 ```
 
+Always-on host prep (macOS — sleep kills schedules; a mini that naps
+misses crons):
+
+```bash
+sudo pmset -a sleep 0 displaysleep 10   # never sleep; display may
+pmset -g | grep -E "^\s*(sleep|displaysleep)"   # verify: sleep 0
+```
+
+Also confirm with the owner:
+
+- Auto-login enabled for the gateway's macOS user (System Settings →
+  Users & Groups → Automatically log in) so launchd + keychain come up
+  unattended after a power cut.
+- System Settings → Energy: "Start up automatically after a power
+  failure" ON, "Prevent automatic sleeping" ON if the pmset route is
+  declined.
+
 ## Phase 2 — workspace layer
 
 1. `WS=~/.openclaw/workspace`
