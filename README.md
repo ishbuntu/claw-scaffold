@@ -26,13 +26,19 @@ Do not add employer-internal content to this repo. Ever.
 | Path | What it is |
 |---|---|
 | `docs/PATTERNS.md` | The distilled pattern library: every reusable idea, with rationale |
+| `docs/CUSTOMIZING.md` | Plug in your own MCP servers, models, skills, apps, automations |
+| `docs/WRITING.md` | Writing quality standards for anything the assistant drafts |
 | `personas/sisyphus.md` | Sisyphus orchestrator system prompt (tool-agnostic, with adapter notes) |
 | `crons/` | Scheduled-job prompt templates for daily life/job management |
 | `skills/` | Portable skill templates (SKILL.md format) |
 | `heartbeat/SPEC.md` | Monitor-until-done task queue spec |
 | `security/BASELINE.md` | Single-operator hardening checklist |
 | `obsidian/DESIGN.md` | Obsidian vault as agent memory: architecture and conventions |
-| `openclaw/` | OpenClaw-specific adapter: config template + Mac mini bootstrap |
+| `openclaw/` | OpenClaw adapter: config template + setup mapping |
+
+The base distribution is **OpenClaw** with Anthropic (Claude) as the
+provider — API key or Claude subscription auth. The pattern library
+itself stays distribution-agnostic so it survives base changes.
 
 ## Quick start (Mac mini)
 

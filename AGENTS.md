@@ -20,8 +20,9 @@ INTERVIEW, ask the owner and wait — do not guess.
 Collect and write answers to `setup-answers.md` (gitignored is fine):
 
 1. `{OWNER}` name and how the assistant should address them.
-2. `{PRIMARY_MODEL}` / `{CHEAP_MODEL}` — Anthropic model IDs to use (and
-   whether auth is API key or subscription).
+2. `{PRIMARY_MODEL}` / `{CHEAP_MODEL}` — Anthropic model IDs, and whether
+   auth is API key or Claude subscription. The base is OpenClaw; do not
+   propose alternatives.
 3. Vault path (create if new): default `~/Obsidian/Main`.
 4. First chat channel (recommend exactly one to start; Telegram is the
    least-friction) and the owner's account ID on it.

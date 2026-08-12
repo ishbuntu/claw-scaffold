@@ -214,3 +214,120 @@ makes a 5-minute poll affordable.
 Implement: one script-cron per board (pattern 3), cache under the
 workspace, drivers as small Python modules, board queries exposed to the
 agent as a skill.
+
+## 16. Cron hygiene
+
+Scheduled jobs at scale need four controls beyond the schedule itself:
+
+- **Jitter**: recurring jobs get a random delay (minutes for hourly, up
+  to a couple hours for daily) unless marked strict — prevents every job
+  slamming the machine and APIs at the same instant.
+- **Skip dates**: recurring jobs can exclude specific dates (holidays,
+  vacation) with a per-job timezone.
+- **Per-job timeout**: a runaway job is killed and reported, never left
+  spinning.
+- **Per-job model override**: judgment-light jobs run on the cheap model;
+  only jobs needing real reasoning get the expensive one.
+
+Why: the daily-rhythm suite (pattern 4) is 7+ jobs before you add your
+own. Without jitter and timeouts, one bad morning takes the whole rhythm
+down with it.
+
+## 17. Artifacts: versioned outputs that outlive chat
+
+Anything substantial the agent produces (a document, a report, a script)
+becomes an artifact: stable identity, deliberate version snapshots (not
+every keystroke), revert, and an activity timeline (created / edited /
+iterated / referenced). Artifacts are file-backed — the artifact points at
+a real path on disk, so external edits and agent edits converge on one
+source of truth. Iterating happens by talking to the agent with the
+artifact in context.
+
+Why: chat scrollback is where good outputs go to die. The vault (see
+`../obsidian/DESIGN.md`) covers notes; artifacts cover working documents
+that go through drafts. In this scaffold the two merge: artifacts live as
+files under the vault's `agent/` subtree with version history via
+snapshot copies or the distribution's artifact store when it has one.
+
+## 18. Autonomous task runner: spec → steps → verify → resume
+
+For multi-step delegated work ("do this migration", "build this app"):
+
+1. Decompose the spec into ordered steps with explicit completion checks.
+2. Execute step by step, writing progress to a durable file after each.
+3. Failed step → diagnose, retry with the fix; extract a lesson from the
+   failure (pattern 8) so the next task doesn't repeat it.
+4. Crash or restart → resume from the progress file, not from zero.
+5. After all steps pass, an acceptance pass reviews the RESULT against
+   the ORIGINAL spec — steps passing is not the same as the spec being
+   satisfied.
+6. A watchdog alerts on stalls (no progress in ~30 min) and enforces a
+   global timeout.
+
+For bigger jobs, gate stages on human approval: present the plan, let the
+owner approve stage-by-stage or all at once, stop after repeated
+escalations rather than thrashing.
+
+Why: this is the difference between an assistant that chats about work
+and one you hand a spec at 11pm and review at breakfast. The durable
+progress file is the load-bearing piece — everything else degrades
+gracefully if that survives.
+
+## 19. Layered memory with decay
+
+Memory is not one store. The layers that earn their keep:
+
+| Layer | Content | Lifecycle |
+|---|---|---|
+| Preferences | how the owner likes things | rewritten wholesale periodically |
+| Projects | current state per project/area | rewritten wholesale periodically |
+| History | what happened, by day | decays: full → summary → date-only → pruned |
+| Lessons | corrections (pattern 8) | permanent until contradicted |
+| Episodic/semantic search | everything, embedded | searched on demand, never injected wholesale |
+
+Two rules make it work: **confidence gating** (the agent only writes a
+"fact" to memory when confident; user-stated facts always qualify) and
+**budgeted injection** (always-injected layers have a hard char budget;
+the rest is reachable only by search). Time-decay keeps history honest —
+last week in full, last year as dates.
+
+Why: inject-everything assistants drown in their own past; search-only
+assistants forget your name. The split — small curated always-on core,
+large searchable archive — is the only shape that scales.
+
+Implement: distributions ship most of this (memory files + embeddings).
+The vault mirrors the human-readable layers (`agent/lessons/`, daily
+notes as history). Let the distribution own embeddings.
+
+## 20. Inbox secretary
+
+A step past draft-never-send triage (pattern 5): the inbox itself becomes
+a managed surface.
+
+- **Discovery**: the agent enumerates conversations (DMs, group threads)
+  itself — no manual list to maintain.
+- **Classification**: each new human message → needs-reply / needs-action
+  / FYI / noise. Bot noise auto-classified without an LLM call.
+- **Drafts on demand**: replies drafted when you ask (button/command),
+  not speculatively for everything — cheaper and less presumptuous.
+- **Investigate**: any inbox item can be handed to a full session with
+  the thread context attached.
+- **Keyword hooks**: configurable rules — "message contains X → notify
+  me immediately / spawn a session / draft a reply". The only path to an
+  auto-sent reply is an explicit per-hook whitelist (pattern 11 applies).
+
+Why: triage crons (pattern 5) poll on a schedule; a secretary owns the
+queue between polls — nothing sits unclassified, and urgent keywords
+break through the batch cycle.
+
+## 21. Snapshot and restore
+
+One command exports the assistant's whole state — config, memory,
+lessons, crons, skills, vault agent-subtree — to a portable archive;
+one command restores it, with replace and merge modes and a dry-run
+preview. Merge dedups (memory by content, crons by name).
+
+Why: the always-on machine WILL be rebuilt someday. If state restore
+isn't tested, the "self-learning" half of the assistant is a single
+hardware failure away from amnesia. Restore-test quarterly: snapshot,
+restore into a scratch home dir, boot, ask it something it should know.
